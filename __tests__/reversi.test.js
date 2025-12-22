@@ -1,4 +1,4 @@
-const { ReversiGame, createBoard, getFlipsForMove, getValidMoves, applyMove, constants } = require('../src/reversi');
+const { ReversiGame, createBoard, getFlipsForMove, getValidMoves, applyMove, chooseBestMove, constants } = require('../src/reversi');
 
 const { BLACK, WHITE, EMPTY } = constants;
 
@@ -40,6 +40,20 @@ describe('Reversi core functions', () => {
     expect(updated[2][3]).toBe(BLACK);
     expect(updated[3][3]).toBe(BLACK);
     expect(board[3][3]).toBe(WHITE); // original board unchanged
+  });
+
+  test('chooseBestMove selects move with most flips and lowest coordinates', () => {
+    const board = createBoard();
+    const validMoves = getValidMoves(board, BLACK);
+    const bestMove = chooseBestMove(validMoves);
+    expect(bestMove).not.toBeNull();
+    const maxFlips = Math.max(...validMoves.map((m) => m.flips.length));
+    expect(bestMove.flips.length).toBe(maxFlips);
+    const candidateWithLowestCoords = validMoves
+      .filter((m) => m.flips.length === maxFlips)
+      .sort((a, b) => (a.row - b.row !== 0 ? a.row - b.row : a.col - b.col))[0];
+    expect(bestMove.row).toBe(candidateWithLowestCoords.row);
+    expect(bestMove.col).toBe(candidateWithLowestCoords.col);
   });
 });
 
