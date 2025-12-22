@@ -2,12 +2,14 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const url = require('url');
-const { ReversiGame } = require('./reversi');
+const { ReversiGame, chooseBestMove, constants } = require('./reversi');
 
 const PORT = process.env.PORT || 3000;
 const PUBLIC_DIR = path.join(__dirname, '..', 'public');
 
 let game = new ReversiGame();
+let cpuOpponentEnabled = true;
+const cpuPlayer = constants.WHITE;
 
 function getContentType(filePath) {
   const ext = path.extname(filePath).toLowerCase();
@@ -46,17 +48,43 @@ async function parseRequestBody(req) {
   });
 }
 
+function advanceGameState() {
+  let changed = false;
+
+  do {
+    changed = false;
+
+    if (game.isGameOver()) {
+      break;
+    }
+
+    const validMoves = game.getValidMoves();
+
+    if (validMoves.length === 0) {
+      const previousPlayer = game.currentPlayer;
+      game.skipTurnIfNoMoves();
+      changed = game.currentPlayer !== previousPlayer;
+      continue;
+    }
+
+    if (cpuOpponentEnabled && game.currentPlayer === cpuPlayer) {
+      const cpuMove = chooseBestMove(validMoves);
+      if (!cpuMove) break;
+      game.makeMove(cpuMove.row, cpuMove.col);
+      changed = true;
+    }
+  } while (changed);
+}
+
 function refreshState() {
-  const validMoves = game.getValidMoves();
-  if (validMoves.length === 0 && !game.isGameOver()) {
-    game.skipTurnIfNoMoves();
-  }
+  advanceGameState();
   return {
     board: game.board,
     currentPlayer: game.currentPlayer,
     validMoves: game.getValidMoves(),
     score: game.getScore(),
-    isGameOver: game.isGameOver()
+    isGameOver: game.isGameOver(),
+    cpuOpponentEnabled
   };
 }
 
@@ -132,9 +160,36 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (pathname === '/api/reset' && req.method === 'POST') {
+    try {
+      const body = await parseRequestBody(req);
+      if (Object.prototype.hasOwnProperty.call(body, 'cpuOpponentEnabled')) {
+        cpuOpponentEnabled = Boolean(body.cpuOpponentEnabled);
+      }
+    } catch (err) {
+      sendJson(res, 400, { error: err.message });
+      return;
+    }
+
     game = new ReversiGame();
     const state = refreshState();
     sendJson(res, 200, state);
+    return;
+  }
+
+  if (pathname === '/api/settings' && req.method === 'POST') {
+    try {
+      const body = await parseRequestBody(req);
+      if (typeof body.cpuOpponentEnabled !== 'boolean') {
+        sendJson(res, 400, { error: 'cpuOpponentEnabled must be a boolean' });
+        return;
+      }
+
+      cpuOpponentEnabled = body.cpuOpponentEnabled;
+      const state = refreshState();
+      sendJson(res, 200, state);
+    } catch (err) {
+      sendJson(res, 400, { error: err.message });
+    }
     return;
   }
 
