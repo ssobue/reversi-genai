@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>リバーシ (オセロ) Web 版</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>リバーシ (オセロ)</h1>
+      <p>ブラウザ上で手軽にプレイできます。黒(B) → 白(W) の順に交互で打ちます。</p>
+    </header>
+
+    <main>
+      <section class="controls">
+        <div class="status">
+          <div class="row"><strong>現在の手番:</strong> <span id="current-player"></span></div>
+          <div class="row"><strong>スコア:</strong> 黒 <span id="score-black"></span> / 白 <span id="score-white"></span></div>
+          <div class="row" id="game-message" aria-live="polite"></div>
+        </div>
+        <div class="actions">
+          <button id="reset-button" type="button">ゲームをリセット</button>
+        </div>
+      </section>
+
+      <section class="board-wrapper">
+        <div id="board" class="board" aria-label="リバーシ盤面"></div>
+      </section>
+
+      <section class="legend">
+        <p><span class="cell chip black"></span> = 黒石 / <span class="cell chip white"></span> = 白石 / <span class="cell valid"></span> = 打てる場所</p>
+      </section>
+    </main>
+
+    <footer>
+      <p>CLI 版と同じロジックを使用し、ルールに沿って自動的にパス処理も行います。</p>
+    </footer>
+
+    <script src="/script.js" type="module"></script>
+  </body>
+</html>
