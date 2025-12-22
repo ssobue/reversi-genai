@@ -4,8 +4,20 @@ const scoreBlackEl = document.getElementById('score-black');
 const scoreWhiteEl = document.getElementById('score-white');
 const messageEl = document.getElementById('game-message');
 const resetButton = document.getElementById('reset-button');
+const cpuToggle = document.getElementById('cpu-toggle');
+const cpuStatusEl = document.getElementById('cpu-status');
 
 let latestState = null;
+
+function applyCpuStatus(state) {
+  const enabled = Boolean(state.cpuOpponentEnabled);
+  if (cpuToggle) {
+    cpuToggle.checked = enabled;
+  }
+  if (cpuStatusEl) {
+    cpuStatusEl.textContent = enabled ? 'CPU 対戦中 (白)' : '2 人対戦モード';
+  }
+}
 
 function renderBoard(board, validMoves) {
   boardEl.innerHTML = '';
@@ -64,7 +76,11 @@ async function handleMove(row, col) {
 }
 
 async function handleReset() {
-  const res = await fetch('/api/reset', { method: 'POST' });
+  const res = await fetch('/api/reset', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ cpuOpponentEnabled: cpuToggle.checked })
+  });
   if (!res.ok) {
     messageEl.textContent = 'リセットに失敗しました';
     return;
@@ -79,6 +95,7 @@ function updateUI(state, infoMessage) {
   currentPlayerEl.textContent = state.isGameOver ? '—' : state.currentPlayer;
   scoreBlackEl.textContent = state.score.black;
   scoreWhiteEl.textContent = state.score.white;
+  applyCpuStatus(state);
 
   if (state.isGameOver) {
     messageEl.textContent = `ゲーム終了! 黒 ${state.score.black} / 白 ${state.score.white}`;
@@ -90,8 +107,27 @@ function updateUI(state, infoMessage) {
   }
 }
 
+async function handleCpuToggle(event) {
+  const enabled = event.target.checked;
+  const res = await fetch('/api/settings', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ cpuOpponentEnabled: enabled })
+  });
+
+  const data = await res.json();
+  if (!res.ok) {
+    messageEl.textContent = data.error || 'CPU 設定の更新に失敗しました';
+    cpuToggle.checked = !enabled;
+    return;
+  }
+
+  updateUI(data, enabled ? 'CPU 対戦をオンにしました (白が CPU)' : 'CPU 対戦をオフにしました');
+}
+
 async function init() {
   resetButton.addEventListener('click', handleReset);
+  cpuToggle.addEventListener('change', handleCpuToggle);
   const state = await fetchState();
   updateUI(state, 'ゲーム開始! 黒からプレイ');
 }

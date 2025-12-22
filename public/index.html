@@ -17,9 +17,14 @@
         <div class="status">
           <div class="row"><strong>現在の手番:</strong> <span id="current-player"></span></div>
           <div class="row"><strong>スコア:</strong> 黒 <span id="score-black"></span> / 白 <span id="score-white"></span></div>
+          <div class="row"><strong>対戦モード:</strong> <span id="cpu-status"></span></div>
           <div class="row" id="game-message" aria-live="polite"></div>
         </div>
         <div class="actions">
+          <label class="toggle">
+            <input type="checkbox" id="cpu-toggle" checked />
+            <span>CPU と対戦する (白が CPU)</span>
+          </label>
           <button id="reset-button" type="button">ゲームをリセット</button>
         </div>
       </section>
