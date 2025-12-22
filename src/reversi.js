@@ -72,6 +72,22 @@ function getValidMoves(board, player) {
   return moves;
 }
 
+function chooseBestMove(validMoves) {
+  if (!Array.isArray(validMoves) || validMoves.length === 0) {
+    return null;
+  }
+
+  return validMoves.reduce((best, move) => {
+    if (!best) return move;
+    if (move.flips.length > best.flips.length) return move;
+    if (move.flips.length === best.flips.length) {
+      if (move.row < best.row) return move;
+      if (move.row === best.row && move.col < best.col) return move;
+    }
+    return best;
+  }, null);
+}
+
 function applyMove(board, player, row, col) {
   const flips = getFlipsForMove(board, player, row, col);
   if (flips.length === 0) {
@@ -137,5 +153,6 @@ module.exports = {
   getValidMoves,
   getFlipsForMove,
   applyMove,
+  chooseBestMove,
   constants: { BLACK, WHITE, EMPTY, BOARD_SIZE }
 };

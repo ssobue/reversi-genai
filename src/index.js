@@ -1,5 +1,5 @@
 const readline = require('readline');
-const { ReversiGame, constants } = require('./reversi');
+const { ReversiGame, constants, chooseBestMove } = require('./reversi');
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -7,6 +7,8 @@ const rl = readline.createInterface({
 });
 
 const game = new ReversiGame();
+let cpuOpponentEnabled = true;
+const cpuPlayer = constants.WHITE;
 
 function printBoard(board) {
   console.log('  0 1 2 3 4 5 6 7');
@@ -37,6 +39,17 @@ function promptMove() {
   console.log(`Current player: ${game.currentPlayer}`);
   printBoard(game.board);
   console.log('Valid moves:', validMoves.map((m) => `(${m.row},${m.col})`).join(' '));
+
+  if (cpuOpponentEnabled && game.currentPlayer === cpuPlayer) {
+    const cpuMove = chooseBestMove(validMoves);
+    if (cpuMove) {
+      console.log(`CPU chooses move (${cpuMove.row},${cpuMove.col}) flipping ${cpuMove.flips.length} pieces.`);
+      game.makeMove(cpuMove.row, cpuMove.col);
+    }
+    promptMove();
+    return;
+  }
+
   rl.question('Enter your move as row,col (or type exit): ', (answer) => {
     if (answer.trim().toLowerCase() === 'exit') {
       rl.close();
@@ -58,7 +71,11 @@ function promptMove() {
 }
 
 console.log('Welcome to Reversi!');
-promptMove();
+rl.question('Play against CPU opponent? (Y/n): ', (answer) => {
+  cpuOpponentEnabled = !(answer && answer.trim().toLowerCase() === 'n');
+  console.log(cpuOpponentEnabled ? 'CPU opponent enabled. You are Black.' : 'CPU opponent disabled. Two-player mode.');
+  promptMove();
+});
 
 process.on('SIGINT', () => {
   console.log('\nGoodbye!');
