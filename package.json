@@ -1,0 +1,19 @@
+{
+  "name": "reversi-genai",
+  "version": "1.0.0",
+  "description": "A simple Node.js Reversi (Othello) engine with tests and CI.",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "jest"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "keywords": ["reversi", "othello", "game", "node"],
+  "author": "Coding Agent",
+  "license": "MIT",
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}
