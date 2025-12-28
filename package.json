@@ -15,6 +15,6 @@
   "author": "Coding Agent",
   "license": "MIT",
   "devDependencies": {
-    "jest": "^29.7.0"
+    "jest": "^30.2.0"
   }
 }
